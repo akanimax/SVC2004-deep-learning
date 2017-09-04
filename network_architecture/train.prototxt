@@ -1,0 +1,1223 @@
+name: "wordnet_conv4_96x192"
+layer {
+  name: "words"
+  type: "Data"
+  top: "data"
+  data_param {
+    source: "../../data/words_train_lmdb_96x192"
+    batch_size: 64
+    backend: LMDB
+  }
+}
+
+
+####################################################################
+#############  Student Net Encoder #################################
+####################################################################
+
+layer {
+  name: "conv1_s"
+  type: "Convolution"
+  bottom: "data"
+  top: "conv1"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 32
+    pad: 3
+    kernel_size: 7
+    stride: 2
+    weight_filler {
+      type: "gaussian"
+      std: 0.05
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+
+# Batch Normalization
+layer {
+  name: "bn1_s"
+  bottom: "conv1"
+  top: "conv1_bn"
+  type: "BatchNorm"
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+}
+
+layer {
+  name: "relu1_s"
+  type: "ReLU"
+  bottom: "conv1_bn"
+  top: "conv1_bn"
+}
+
+###########################################
+
+layer {
+  name: "conv2_s"
+  type: "Convolution"
+  bottom: "conv1_bn"
+  top: "conv2"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 32
+    pad: 2
+    kernel_size: 5
+    stride: 2
+    weight_filler {
+      type: "gaussian"
+      std: 0.05
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+
+# Batch Normalization
+layer {
+  name: "bn2_s"
+  bottom: "conv2"
+  top: "conv2_bn"
+  type: "BatchNorm"
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+}
+
+layer {
+  name: "relu2_s"
+  type: "ReLU"
+  bottom: "conv2_bn"
+  top: "conv2_bn"
+}
+
+###########################################
+
+layer {
+  name: "conv3_s"
+  type: "Convolution"
+  bottom: "conv2_bn"
+  top: "conv3"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 32
+    pad: 2
+    kernel_size: 5
+    stride: 2
+    weight_filler {
+      type: "gaussian"
+      std: 0.05
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+
+# Batch Normalization
+layer {
+  name: "bn3_s"
+  bottom: "conv3"
+  top: "conv3_bn"
+  type: "BatchNorm"
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+}
+
+layer {
+  name: "relu3_s"
+  type: "ReLU"
+  bottom: "conv3_bn"
+  top: "conv3_bn"
+}
+
+
+###########################################
+
+layer {
+  name: "conv4_s_1"
+  type: "Convolution"
+  bottom: "conv3_bn"
+  top: "conv4"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 16
+    pad: 1
+    kernel_size: 3
+    stride: 2
+    weight_filler {
+      type: "gaussian"
+      std: 0.05
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+
+# Batch Normalization
+layer {
+  name: "bn4_s_1"
+  bottom: "conv4"
+  top: "conv4_bn"
+  type: "BatchNorm"
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+}
+
+layer {
+  name: "relu4_s"
+  type: "ReLU"
+  bottom: "conv4_bn"
+  top: "conv4_bn"
+}
+
+
+#################################################################################################################
+############# Decoder Network ###################################################################################
+#Symmetric architecture. Deconvolution -> BN -> ReLU -> Unpooling. Sigmoid/TanH/No-activation -> Euclidean loss##
+#################################################################################################################
+
+
+layer {
+  name: "deconv4_1"
+  type: "Deconvolution"
+  bottom: "conv4_bn"
+  top: "deconv4"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 32
+    pad: 1
+    kernel_size: 4
+    stride: 2
+    weight_filler {
+      type: "gaussian"
+      std: 0.05
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+
+# Batch Normalization
+layer {
+  name: "bn4_de"
+  bottom: "deconv4"
+  top: "deconv4_bn"
+  type: "BatchNorm"
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+}
+
+layer {
+  name: "relu4_de"
+  type: "ReLU"
+  bottom: "deconv4_bn"
+  top: "deconv4_bn"
+}
+
+###########################################
+
+layer {
+  name: "deconv3"
+  type: "Deconvolution"
+  bottom: "deconv4_bn"
+  top: "deconv3"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 32
+    pad: 1
+    kernel_size: 4
+    stride: 2
+    weight_filler {
+      type: "gaussian"
+      std: 0.05
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+
+# Batch Normalization
+layer {
+  name: "bn3_de"
+  bottom: "deconv3"
+  top: "deconv3_bn"
+  type: "BatchNorm"
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+}
+
+layer {
+  name: "relu3_de"
+  type: "ReLU"
+  bottom: "deconv3_bn"
+  top: "deconv3_bn"
+}
+
+###########################################
+
+layer {
+  name: "deconv2"
+  type: "Deconvolution"
+  bottom: "deconv3_bn"
+  top: "deconv2"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 32
+    pad: 1
+    kernel_size: 4
+    stride: 2
+    weight_filler {
+      type: "gaussian"
+      std: 0.05
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+
+# Batch Normalization
+layer {
+  name: "bn2_de"
+  bottom: "deconv2"
+  top: "deconv2_bn"
+  type: "BatchNorm"
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+}
+
+layer {
+  name: "relu2_de"
+  type: "ReLU"
+  bottom: "deconv2_bn"
+  top: "deconv2_bn"
+}
+
+###########################################
+
+layer {
+  name: "deconv1"
+  type: "Deconvolution"
+  bottom: "deconv2_bn"
+  top: "deconv1"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 32
+    pad: 1
+    kernel_size: 4
+    stride: 2
+    weight_filler {
+      type: "gaussian"
+      std: 0.05
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+
+# Batch Normalization
+layer {
+  name: "bn1_de"
+  bottom: "deconv1"
+  top: "deconv1_bn"
+  type: "BatchNorm"
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+  param {
+    lr_mult: 0
+  }
+}
+
+layer {
+  name: "relu1_de"
+  type: "ReLU"
+  bottom: "deconv1_bn"
+  top: "deconv1_bn"
+}
+
+###########################################
+
+layer {
+  name: "deconv0"
+  type: "Deconvolution"
+  bottom: "deconv1_bn"
+  top: "deconv0"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 1
+    pad: 1
+    kernel_size: 3
+    stride: 1
+    weight_filler {
+      type: "gaussian"
+      std: 0.05
+    }
+    bias_filler {
+      type: "constant"
+    }
+  }
+}
+
+############################################################
+
+########### Normalizing data ###############################
+
+# x = (x - min_x)*2.0/(max_x - min_x) - 1
+# Or, x = (x - min_x)*2.0*(max_x - min_x)^(-1) - 1
+#Steps:
+# 1. Get max
+# 2. Get min
+# 3. Get inverse
+# 4. Make tiles and dummydata
+# 5. Final multiplication and subtraction
+############################################################
+
+
+####### Create a duplicate data blob to reduce complexity ######
+
+layer{
+  name: "temp_ones"
+  type: "DummyData"
+  top: "temp_ones"  
+  dummy_data_param{
+    data_filler{
+      type:"constant"
+      value: 1
+    }
+    shape:{
+      dim: 64
+      dim: 1
+      dim: 96
+      dim: 192
+    }
+  }
+}
+layer {
+  name: "data_blob1"
+  type: "Eltwise"
+  bottom: "temp_ones"
+  bottom: "data"        # Change the layer name here only.. No other change is required.
+  top: "data_blob"
+  eltwise_param {
+    operation: PROD
+  }  
+}
+
+
+########## Getting max values ##############################
+
+layer {
+  name: "pool_max1"
+  type: "Pooling"
+  bottom: "data_blob"
+  top: "pool_max1"
+  pooling_param {
+    pool: MAX
+    #kernel_size: 128    # map_size = 32x32
+    kernel_h: 96
+    kernel_w: 192
+    stride: 1
+  }
+}
+
+layer {
+  name: "reshape1"
+  type: "Reshape" 
+  bottom: "pool_max1"
+  top: "reshape1"
+  reshape_param {
+    shape { 
+      dim:  0
+      dim: 1
+      dim: 1
+      dim: 1          # Num_channels = 3
+    }  
+  }
+}
+
+layer {
+  name: "tiles_max"
+  type: "Tile"
+  bottom: "reshape1"
+  top: "tiles_max"
+  tile_param{
+    tiles: 1
+    axis: 2
+  }
+}
+
+layer {
+  name: "pool_max2"
+  type: "Pooling"
+  bottom: "tiles_max"
+  top: "max_val"
+  pooling_param {
+    pool: MAX
+    kernel_size: 1
+    stride: 1
+  }
+}
+
+########### Getting Min Value #############################
+
+layer{
+  name: "dummy_minus_ones"
+  type: "DummyData"
+  top: "dummy_minus_ones"  
+  dummy_data_param{
+    data_filler{
+      type:"constant"
+      value: -1  
+    }
+    shape:{
+      dim: 64
+      dim: 1
+      dim: 96
+      dim: 192
+    }
+  }
+}
+layer {
+  name: "data_reversed"
+  type: "Eltwise"
+  bottom: "dummy_minus_ones"
+  bottom: "data_blob"
+  top: "data_reversed"
+  eltwise_param {
+    operation: PROD
+  }  
+}
+
+layer {
+  name: "pool_min1"
+  type: "Pooling"
+  bottom: "data_reversed"
+  top: "pool_min1"
+  pooling_param {
+    pool: MAX
+    #kernel_size: 128     # map_size = 32x32
+    kernel_h: 96
+    kernel_w: 192    
+    stride: 1
+  }
+}
+layer {
+  name: "reshape2"
+  type: "Reshape" 
+  bottom: "pool_min1"
+  top: "reshape2"
+  reshape_param {
+    shape { 
+      dim:  0
+      dim: 1
+      dim: 1
+      dim: 1        # Num_channels = 3
+    }  
+  }
+}
+layer {
+  name: "tiles_min"
+  type: "Tile"
+  bottom: "reshape2"
+  top: "tiles_min"
+  tile_param{
+    tiles: 1        # Num_channels = 3
+    axis: 2
+  }
+}
+layer {
+  name: "pool_min2"
+  type: "Pooling"
+  bottom: "tiles_min"
+  top: "min_max_val"
+  pooling_param {
+    pool: MAX
+    kernel_size: 1
+    stride: 1
+  }
+}
+
+layer{
+  name: "dummy_negative"
+  type: "DummyData"
+  top: "dummy_negative"
+  dummy_data_param{
+    data_filler{
+      type:"constant"
+      value: -1  
+    }
+    shape:{
+      dim: 64
+      dim: 1
+      dim: 1
+      dim: 1
+    }
+  }
+}
+
+layer {
+  name: "min_val"
+  type: "Eltwise"
+  bottom: "dummy_negative"
+  bottom: "min_max_val"
+  top: "min_val"
+  eltwise_param {
+    operation: PROD
+  }  
+}
+
+###########################################################
+# Get inverse of (max-min)
+
+layer {
+  name: "max_minus_min"
+  type: "Eltwise"
+  bottom: "max_val"
+  bottom: "min_val"  
+  top: "max_minus_min"
+  eltwise_param {
+    operation: SUM
+    coeff: 1
+    coeff: -1
+  }  
+}
+
+# Outputs y = (shift + scale * x) ^ power
+
+layer {
+  name: "inverse"
+  type: "Power"
+  bottom: "max_minus_min"
+  top: "inverse"
+  power_param {
+    shift: 0
+    scale: 1
+    power: -1
+  }  
+}
+
+###########################################################
+
+## Tiles for min values
+
+layer {
+  name: "tiles_min1"
+  type: "Tile"
+  bottom: "min_val"
+  top: "tiles_min1"
+  tile_param{
+    tiles: 1          # Num channels
+    axis: 1
+  }
+}
+layer {
+  name: "tiles_min2"
+  type: "Tile"
+  bottom: "tiles_min1"
+  top: "tiles_min2"
+  tile_param{
+    tiles: 96     # Height
+    axis: 2
+  }
+}
+layer {
+  name: "tiles_min3"
+  type: "Tile"
+  bottom: "tiles_min2"
+  top: "tiles_min3"
+  tile_param{
+    tiles: 192   # Width
+    axis: 3
+  }
+}
+
+## Tiles for inverse values
+
+layer {
+  name: "tiles_inverse1"
+  type: "Tile"
+  bottom: "inverse"
+  top: "tiles_inverse1"
+  tile_param{
+    tiles: 1
+    axis: 1
+  }
+}
+layer {
+  name: "tiles_inverse2"
+  type: "Tile"
+  bottom: "tiles_inverse1"
+  top: "tiles_inverse2"
+  tile_param{
+    tiles: 96        # Height
+    axis: 2
+  }
+}
+layer {
+  name: "tiles_inverse3"
+  type: "Tile"
+  bottom: "tiles_inverse2"
+  top: "tiles_inverse3"
+  tile_param{
+    tiles: 192       # width
+    axis: 3
+  }
+}
+
+#####################################################
+
+# Width of interval: For [-1,+1] = 2 , max-min = 2
+layer{
+  name: "dummy_interval_range"
+  type: "DummyData"
+  top: "dummy_interval_range"
+  dummy_data_param{
+    data_filler{
+      type:"constant"
+      value: 1.0        # value = (max - min)
+    }
+    shape:{
+      dim: 64
+      dim: 1
+      dim: 96
+      dim: 192
+    }
+  }
+}
+# Max value in symmetric interval
+layer{
+  name: "dummy_interval_max"
+  type: "DummyData"
+  top: "dummy_interval_max"
+  dummy_data_param{
+    data_filler{
+      type:"constant"
+      value: 0.5        # value = max in interval, e.g. value = 1 in [-1,+1]
+    }
+    shape:{
+      dim: 64
+      dim: 1
+      dim: 96
+      dim: 192
+    }
+  }
+}
+
+######################################################
+##### Final Calculations #############################
+
+layer {
+  name: "x_minus_min"
+  type: "Eltwise"
+  bottom: "data_blob"
+  bottom: "tiles_min3"  
+  top: "x_minus_min"
+  eltwise_param {
+    operation: SUM
+    coeff: 1
+    coeff: -1
+  }  
+}
+layer {
+  name: "multiply_interval_range"
+  type: "Eltwise"
+  bottom: "x_minus_min"
+  bottom: "dummy_interval_range"
+  top: "multiply_interval_range"
+  eltwise_param {
+    operation: PROD
+  }  
+}
+layer {
+  name: "multiply_inverse"
+  type: "Eltwise"
+  bottom: "multiply_interval_range"
+  bottom: "tiles_inverse3"
+  top: "multiply_inverse"
+  eltwise_param {
+    operation: PROD
+  }  
+}
+
+######################################################
+layer {
+  name: "data_normalised"
+  type: "Eltwise"
+  bottom: "multiply_inverse"
+  bottom: "dummy_interval_max"
+  top: "data_normalised"
+  eltwise_param {
+    operation: SUM
+    coeff: 1
+    coeff: -1
+  }  
+}
+
+#######################################################################
+#######################################################################
+
+
+####### Create a duplicate data blob to reduce complexity ######
+
+layer {
+  name: "de_data_blob"
+  type: "Eltwise"
+  bottom: "temp_ones"
+  bottom: "deconv0"        # Change the layer name here only.. No other change is required.
+  top: "de_data_blob"
+  eltwise_param {
+    operation: PROD
+  }  
+}
+
+
+########## Getting max values ##############################
+
+layer {
+  name: "de_pool_max1"
+  type: "Pooling"
+  bottom: "de_data_blob"
+  top: "de_pool_max1"
+  pooling_param {
+    pool: MAX
+    #kernel_size: 128    # map_size = 32x32
+    kernel_h: 96
+    kernel_w: 192    
+    stride: 1
+  }
+}
+
+layer {
+  name: "de_reshape1"
+  type: "Reshape" 
+  bottom: "de_pool_max1"
+  top: "de_reshape1"
+  reshape_param {
+    shape { 
+      dim:  0
+      dim: 1
+      dim: 1
+      dim: 1          # Num_channels = 3
+    }  
+  }
+}
+
+layer {
+  name: "de_tiles_max"
+  type: "Tile"
+  bottom: "de_reshape1"
+  top: "de_tiles_max"
+  tile_param{
+    tiles: 1
+    axis: 2
+  }
+}
+
+layer {
+  name: "de_pool_max2"
+  type: "Pooling"
+  bottom: "de_tiles_max"
+  top: "de_max_val"
+  pooling_param {
+    pool: MAX
+    kernel_size: 1
+    stride: 1
+  }
+}
+
+########### Getting Min Value #############################
+
+layer {
+  name: "de_data_reversed"
+  type: "Eltwise"
+  bottom: "dummy_minus_ones"
+  bottom: "de_data_blob"
+  top: "de_data_reversed"
+  eltwise_param {
+    operation: PROD
+  }  
+}
+
+layer {
+  name: "de_pool_min1"
+  type: "Pooling"
+  bottom: "de_data_reversed"
+  top: "de_pool_min1"
+  pooling_param {
+    pool: MAX
+    #kernel_size: 128     # map_size = 32x32
+    kernel_h: 96
+    kernel_w: 192    
+    stride: 1
+  }
+}
+layer {
+  name: "de_reshape2"
+  type: "Reshape" 
+  bottom: "de_pool_min1"
+  top: "de_reshape2"
+  reshape_param {
+    shape { 
+      dim:  0
+      dim: 1
+      dim: 1
+      dim: 1        # Num_channels = 3
+    }  
+  }
+}
+layer {
+  name: "de_tiles_min"
+  type: "Tile"
+  bottom: "de_reshape2"
+  top: "de_tiles_min"
+  tile_param{
+    tiles: 1        # Num_channels = 3
+    axis: 2
+  }
+}
+layer {
+  name: "de_pool_min2"
+  type: "Pooling"
+  bottom: "de_tiles_min"
+  top: "de_min_max_val"
+  pooling_param {
+    pool: MAX
+    kernel_size: 1
+    stride: 1
+  }
+}
+
+layer {
+  name: "de_min_val"
+  type: "Eltwise"
+  bottom: "dummy_negative"
+  bottom: "de_min_max_val"
+  top: "de_min_val"
+  eltwise_param {
+    operation: PROD
+  }  
+}
+
+
+###########################################################
+# Get inverse of (max-min)
+
+layer {
+  name: "de_max_minus_min"
+  type: "Eltwise"
+  bottom: "de_max_val"
+  bottom: "de_min_val"  
+  top: "de_max_minus_min"
+  eltwise_param {
+    operation: SUM
+    coeff: 1
+    coeff: -1
+  }  
+}
+
+# Outputs y = (shift + scale * x) ^ power
+
+layer {
+  name: "de_inverse"
+  type: "Power"
+  bottom: "de_max_minus_min"
+  top: "de_inverse"
+  power_param {
+    shift: 0
+    scale: 1
+    power: -1
+  }  
+}
+
+###########################################################
+
+## Tiles for min values
+
+layer {
+  name: "de_tiles_min1"
+  type: "Tile"
+  bottom: "de_min_val"
+  top: "de_tiles_min1"
+  tile_param{
+    tiles: 1          # Num channels
+    axis: 1
+  }
+}
+layer {
+  name: "de_tiles_min2"
+  type: "Tile"
+  bottom: "de_tiles_min1"
+  top: "de_tiles_min2"
+  tile_param{
+    tiles: 96
+    axis: 2
+  }
+}
+layer {
+  name: "de_tiles_min3"
+  type: "Tile"
+  bottom: "de_tiles_min2"
+  top: "de_tiles_min3"
+  tile_param{
+    tiles: 192
+    axis: 3
+  }
+}
+
+## Tiles for inverse values
+
+layer {
+  name: "de_tiles_inverse1"
+  type: "Tile"
+  bottom: "de_inverse"
+  top: "de_tiles_inverse1"
+  tile_param{
+    tiles: 1
+    axis: 1
+  }
+}
+layer {
+  name: "de_tiles_inverse2"
+  type: "Tile"
+  bottom: "de_tiles_inverse1"
+  top: "de_tiles_inverse2"
+  tile_param{
+    tiles: 96
+    axis: 2
+  }
+}
+layer {
+  name: "de_tiles_inverse3"
+  type: "Tile"
+  bottom: "de_tiles_inverse2"
+  top: "de_tiles_inverse3"
+  tile_param{
+    tiles: 192
+    axis: 3
+  }
+}
+
+#####################################################
+
+# Width of interval: For [-1,+1] = 2 , max-min = 2
+layer{
+  name: "de_dummy_interval_range"
+  type: "DummyData"
+  top: "de_dummy_interval_range"
+  dummy_data_param{
+    data_filler{
+      type:"constant"
+      value: 1.0        # value = (max - min)
+    }
+    shape:{
+      dim: 64
+      dim: 1
+      dim: 96
+      dim: 192
+    }
+  }
+}
+# Max value in symmetric interval
+layer{
+  name: "de_dummy_interval_max"
+  type: "DummyData"
+  top: "de_dummy_interval_max"
+  dummy_data_param{
+    data_filler{
+      type:"constant"
+      value: 0.5        # value = max in interval, e.g. value = 1 in [-1,+1]
+    }
+    shape:{
+      dim: 64
+      dim: 1
+      dim: 96
+      dim: 192
+    }
+  }
+}
+
+######################################################
+##### Final Calculations #############################
+
+layer {
+  name: "de_x_minus_min"
+  type: "Eltwise"
+  bottom: "de_data_blob"
+  bottom: "de_tiles_min3"  
+  top: "de_x_minus_min"
+  eltwise_param {
+    operation: SUM
+    coeff: 1
+    coeff: -1
+  }  
+}
+layer {
+  name: "de_multiply_interval_range"
+  type: "Eltwise"
+  bottom: "de_x_minus_min"
+  bottom: "de_dummy_interval_range"
+  top: "de_multiply_interval_range"
+  eltwise_param {
+    operation: PROD
+  }  
+}
+layer {
+  name: "de_multiply_inverse"
+  type: "Eltwise"
+  bottom: "de_multiply_interval_range"
+  bottom: "de_tiles_inverse3"
+  top: "de_multiply_inverse"
+  eltwise_param {
+    operation: PROD
+  }  
+}
+
+######################################################
+layer {
+  name: "deconv0_normalised"
+  type: "Eltwise"
+  bottom: "de_multiply_inverse"
+  bottom: "de_dummy_interval_max"
+  top: "deconv0_normalised"
+  eltwise_param {
+    operation: SUM
+    coeff: 1
+    coeff: -1
+  }  
+}
+
+######################################################
+
+layer {
+  name: "loss_norm"
+  type: "EuclideanLoss"
+  bottom: "data_normalised"
+  bottom: "deconv0_normalised"
+  top: "loss_norm"
+  loss_weight: 1  # Huge loss
+}
+
+

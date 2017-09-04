@@ -1,0 +1,163 @@
+
+# Full test on SVC_2004 dataset
+
+import cv2
+import os
+import numpy as np
+from sklearn.svm import OneClassSVM
+from sklearn.metrics import accuracy_score
+import pickle
+os.environ['GLOG_minloglevel'] = '2' 
+import caffe
+
+
+def get_features(source_path,uid):
+    # Get list of files
+    files = os.listdir(source_path)
+    # Init network and get output
+    caffe.set_device(0)
+    caffe.set_mode_gpu()
+    ## Change here only
+    model_weights = '../res/wordnet_conv4_96x192.caffemodel'
+    model_def = '../res/deploy_wordnet_conv4_96x192.prototxt'
+    output_blob = 'conv4_bn'
+    height = 96
+    width = 192
+    ##
+    net = caffe.Net(str(model_def), str(model_weights), caffe.TEST)  # create net and load weights
+    feats = []
+    print('Extracting features from alexnet..')
+    for f in files:
+        img_name = source_path+f
+        img = cv2.imread(img_name,0) # Loads as color image
+        img = cv2.resize(img,(width,height))  # Correct
+        img = img.reshape(height,width,1)     # Correct
+        img = np.transpose(img,[2,0,1])
+        # Prediction
+        net_output = net.forward_all(data=np.asarray([img]))
+        scores = net_output[output_blob][0]  # Becoz there are only one frame
+        scores = list(scores.flat)
+        feats.append(scores)
+    print('Features extracted.\n')
+    return feats
+
+
+def train_svm(train_feats):
+    
+    print('Training one-class svm..')
+    clf=OneClassSVM(nu=0.01,kernel='linear',gamma=.1)  #'linear'/'poly'/'sigmoid'/'rbf'
+    clf.fit(train_feats)
+    with open('svm_weights.pickle', 'wb') as handle:
+        pickle.dump(clf, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    print('Model saved')
+    
+    train_pred = clf.predict(train_feats)
+    n_error_train = train_pred[train_pred == -1].size
+    print('\nTraining error rate:')
+    train_error = n_error_train*1.0/len(train_feats)
+    print(train_error)
+    return train_error
+
+        
+def train(train_path,uid):
+    train_feats = get_features(train_path,uid)
+    train_error = train_svm(train_feats)
+    return train_error
+
+    
+def test_svm(test_feats):
+    # Load weights
+    with open('svm_weights.pickle', 'rb') as handle:
+        clf = pickle.load(handle)
+    # Test
+#    test_pred = clf.predict(test_feats)
+#    n_error_test = test_pred[test_pred == -1].size
+
+#    test_error = n_error_test*1.0/len(test_feats)
+#    print(test_error)
+#    print(test_pred)
+#    print(clf.decision_function(test_feats))
+    scores = clf.decision_function(test_feats)
+    test_error = []
+    th_range = np.array(range(-10,1,1))*0.1
+    for th in th_range:        
+        test_pred = np.array([-1 if x < th else 1 for x in scores])
+        n_error_test = test_pred[test_pred == -1].size
+        test_error.append(n_error_test*1.0/len(test_feats))
+    print('Test error rate:')
+    print(test_error)    
+    return test_error
+    
+    
+def test_positives(test_path,uid):
+    print('\nTesting true positives:')
+    test_feats = get_features(test_path,uid)
+    test_error = test_svm(test_feats)
+    return test_error
+
+
+def test_outliers_svm(outliers_feats):
+    # Load weights
+    with open('svm_weights.pickle', 'rb') as handle:
+        clf = pickle.load(handle)
+    # Test
+    #outliers_pred = clf.predict(outliers_feats)
+    #n_error_outliers = outliers_pred[outliers_pred == 1].size
+    scores = clf.decision_function(outliers_feats)
+    outliers_error = []
+    th_range = np.array(range(-10,1,1))*0.1
+    for th in th_range:        
+        outliers_pred = np.array([1 if x < th else -1 for x in scores])
+        n_error_outliers = outliers_pred[outliers_pred == -1].size
+        outliers_error.append(n_error_outliers*1.0/len(outliers_feats))
+    print('Outliers error rate:')
+    print(outliers_error)
+    
+    return outliers_error
+    
+    
+def test_outliers(outliers_path,uid):
+    print('\nTesting outliers:')
+    outliers_feats = get_features(outliers_path,uid)
+    outliers_error = test_outliers_svm(outliers_feats)
+    return outliers_error
+
+
+def full_test():
+    
+    train_error_sum = 0.0
+    test_error_sum = 0.0
+    outliers_error_sum = 0.0
+    data_folder = 'svc2004/user'
+    english_user_ids = [2, 4, 6, 8, 10, 11, 12, 13, 15, 18, 20, 22, 24, 25, 26, 28, 30, 32, 34, 35, 37, 38, 39] 
+    num_users = len(english_user_ids)
+    
+    for i in english_user_ids:
+        print('\nuser'+`i`+':\n')
+        train_path = data_folder+ `i` + '/train/'
+        test_path = data_folder+ `i` + '/test/'
+        outliers_path = data_folder+ `i` + '/outliers/'
+        
+        train_error = train(train_path,i)        
+        test_error = test_positives(test_path,i)
+        outliers_error = test_outliers(outliers_path,i)        
+        
+        train_error_sum = train_error_sum + np.array(train_error)
+        test_error_sum = test_error_sum + np.array(test_error)
+        outliers_error_sum = outliers_error_sum + np.array(outliers_error)
+        #break
+
+    print('Final train error:')    
+    print(train_error_sum*1.0/num_users)
+    print('Final test error:')    
+    print(test_error_sum*1.0/num_users)
+    print('Final outliers error:')
+    print(outliers_error_sum*1.0/num_users)
+    
+
+
+full_test()
+
+
+
+

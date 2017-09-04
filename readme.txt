@@ -1,0 +1,13 @@
+
+Steps to train network for signature verification:
+
+Step1:
+
+Take all the data from words_binary and train an autoencoder. The network details are given in network_architecture folder. Input size to the network is 96x192.
+Note down the loss value of the network. You can give some of the training samples for testing the loss(Let say, random 10% of full data as test samples, whereas full data is used for training).
+
+Step2:
+Take the converged network from previous test. Run thresh_wordnet_english_test.py code, which tests the english signs only from svc2004 dataset. You have to only modify 'get_features()' function, which extracts features from signatures.
+Output will be a list, which contains error rate for different threshold values.
+
+

@@ -1,0 +1,33 @@
+# This follows "ADAM: A METHOD FOR STOCHASTIC OPTIMIZATION"
+#
+train_net: "train.prototxt"
+test_net: "test.prototxt"
+#
+# test_iter specifies how many forward passes the test should carry out.
+# In the case of CIFAR10, we have test batch size 100 and 100 test iterations,
+# covering the full 10,000 testing images.
+test_iter: 100   # Dont change this
+#
+#
+# All parameters are from the cited paper above
+base_lr: 0.0001   # Try with different base_lr : 0.0002, 0.0001 , 0.00002
+momentum: 0.9
+#momentum2: 0.999
+weight_decay: 0.0001
+#
+# seed for generating random values
+random_seed: 1
+iter_size: 2
+# since Adam dynamically changes the learning rate, we set the base learning
+# rate to a fixed value
+lr_policy: "fixed"
+#
+test_interval: 200
+display: 200
+max_iter: 20000
+snapshot: 2000
+#
+snapshot_prefix: "models/wordnet_conv4_96x192"
+#
+#type: "Adam"
+solver_mode: GPU
