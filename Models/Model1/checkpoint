@@ -1,0 +1,3 @@
+model_checkpoint_path: "Model1-720"
+all_model_checkpoint_paths: "Model1-710"
+all_model_checkpoint_paths: "Model1-720"
