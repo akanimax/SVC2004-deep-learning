@@ -1,49 +1,66 @@
-
 # Full test on SVC_2004 dataset
 
-import cv2
 import os
 import numpy as np
 from sklearn.svm import OneClassSVM
 from sklearn.metrics import accuracy_score
+from network_architecture import computation_graph
+from scipy.misc import imread, imresize
+import tensorflow as tf
 import pickle
 os.environ['GLOG_minloglevel'] = '2' 
-import caffe
+# import caffe
 
 
-def get_features(source_path,uid):
-    # Get list of files
-    files = os.listdir(source_path)
-    # Init network and get output
-    caffe.set_device(0)
-    caffe.set_mode_gpu()
-    ## Change here only
-    model_weights = '../res/wordnet_conv4_96x192.caffemodel'
-    model_def = '../res/deploy_wordnet_conv4_96x192.prototxt'
-    output_blob = 'conv4_bn'
-    height = 96
-    width = 192
-    ##
-    net = caffe.Net(str(model_def), str(model_weights), caffe.TEST)  # create net and load weights
-    feats = []
-    print('Extracting features from alexnet..')
-    for f in files:
-        img_name = source_path+f
-        img = cv2.imread(img_name,0) # Loads as color image
-        img = cv2.resize(img,(width,height))  # Correct
-        img = img.reshape(height,width,1)     # Correct
-        img = np.transpose(img,[2,0,1])
-        # Prediction
-        net_output = net.forward_all(data=np.asarray([img]))
-        scores = net_output[output_blob][0]  # Becoz there are only one frame
-        scores = list(scores.flat)
-        feats.append(scores)
-    print('Features extracted.\n')
-    return feats
+def get_features(source_path):
+	''' 
+		Function that runs the trained Autoencoder model and outputs the features learned (latent representation).
+		@param
+		source_path => The path where the files are present.
+		@return => The features encoded by tensorflow.
+	'''
+
+	# load the graph to execute:
+	myGraph = computation_graph.myGraph
+
+	# Get list of files
+	files = os.listdir(source_path)
+
+	height, width, channels = 96, 192, 3
+
+	# create empty numpy array for the data to be collected	
+	batch = np.ndarray(shape=(len(files), height, width, channels), dtype=np.float32)
+
+	# fill the empty array with image data
+	count = 0
+	for f in files:
+		img_name = source_path + f
+		img = imread(img_name, mode="RGB") # load in RGB format. truncate the alpha channel if it exists
+		img = imresize(img, (height, width, channels)) # resize the images to our dimensions.
+		batch[count] = img # insert this image in the batch
+		count += 1 # increment the counter
+        
+	# start tensorflow session and get the features (latent representation)
+	with tf.Session(graph=myGraph) as sess:
+		# define the path where the model is saved:
+		saver = tf.train.Saver() # create instance of the saver module
+		model_path = "Models/Model2/"
+
+		# load the trained weights in the graph
+		saver.restore(sess, tf.train.latest_checkpoint(model_path))
+
+		# get a handle of the input and the output op.
+		inputs = sess.graph.get_tensor_by_name("inputs:0")
+		output = sess.graph.get_tensor_by_name("relu1_4:0")				
+
+		features = sess.run(output, feed_dict={inputs: batch})
+		
+	print('Features extracted.\n')
+	features = features.reshape(len(files), -1)
+	return features
 
 
 def train_svm(train_feats):
-    
     print('Training one-class svm..')
     clf=OneClassSVM(nu=0.01,kernel='linear',gamma=.1)  #'linear'/'poly'/'sigmoid'/'rbf'
     clf.fit(train_feats)
@@ -60,7 +77,7 @@ def train_svm(train_feats):
 
         
 def train(train_path,uid):
-    train_feats = get_features(train_path,uid)
+    train_feats = get_features(train_path)
     train_error = train_svm(train_feats)
     return train_error
 
@@ -91,7 +108,7 @@ def test_svm(test_feats):
     
 def test_positives(test_path,uid):
     print('\nTesting true positives:')
-    test_feats = get_features(test_path,uid)
+    test_feats = get_features(test_path)
     test_error = test_svm(test_feats)
     return test_error
 
@@ -118,7 +135,7 @@ def test_outliers_svm(outliers_feats):
     
 def test_outliers(outliers_path,uid):
     print('\nTesting outliers:')
-    outliers_feats = get_features(outliers_path,uid)
+    outliers_feats = get_features(outliers_path)
     outliers_error = test_outliers_svm(outliers_feats)
     return outliers_error
 
