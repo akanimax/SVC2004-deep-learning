@@ -44,10 +44,14 @@ with myGraph.as_default():
     conv1_1 = tf.layers.conv2d(inputs, 32, [7, 7], strides=(2, 2), 
                             padding="SAME", name="conv_layer1_1")
     
+<<<<<<< HEAD
     bn1_1 = tf.contrib.layers.batch_norm(conv1_1)
     
     # record histogram summary:
     bn1_1_summary = tf.summary.histogram("bn1_1_summary", bn1_1)
+=======
+    bn1_1 = tf.layers.batch_normalization(conv1_1, name="batch_normalization1_1")
+>>>>>>> 78a99623fce7eeaa58f18ba307452e3cae9714a7
     
     relu1_1 = tf.nn.relu(bn1_1, name="relu1_1")
     
@@ -55,7 +59,11 @@ with myGraph.as_default():
     conv1_2 = tf.layers.conv2d(relu1_1, 32, [5, 5], strides=(2, 2),
                             padding="SAME", name="conv_layer1_2")
     
+<<<<<<< HEAD
     bn1_2 = tf.contrib.layers.batch_norm(conv1_2)
+=======
+    bn1_2 = tf.layers.batch_normalization(conv1_2, name="batch_normalization1_2")
+>>>>>>> 78a99623fce7eeaa58f18ba307452e3cae9714a7
     
     relu1_2 = tf.nn.relu(bn1_2, name="relu1_2")
     
@@ -63,7 +71,11 @@ with myGraph.as_default():
     conv1_3 = tf.layers.conv2d(relu1_2, 32, [5, 5], strides=(2, 2),
                             padding="SAME", name="conv_layer1_3")
     
+<<<<<<< HEAD
     bn1_3 = tf.contrib.layers.batch_norm(conv1_3)
+=======
+    bn1_3 = tf.layers.batch_normalization(conv1_3, name="batch_normalization1_3")
+>>>>>>> 78a99623fce7eeaa58f18ba307452e3cae9714a7
     
     relu1_3 = tf.nn.relu(bn1_3, name="relu1_3")
     
@@ -71,10 +83,14 @@ with myGraph.as_default():
     conv1_4 = tf.layers.conv2d(relu1_3, 16, [3, 3], strides=(2, 2), 
                             padding="SAME", name="conv_layer1_4")
 
+<<<<<<< HEAD
     bn1_4 = tf.contrib.layers.batch_norm(conv1_4)
     
     # record histogram summary:
     bn1_4_summary = tf.summary.histogram("bn1_4_summary", bn1_4)
+=======
+    bn1_4 = tf.layers.batch_normalization(conv1_4, name="batch_normalization1_4")
+>>>>>>> 78a99623fce7eeaa58f18ba307452e3cae9714a7
     
     relu1_4 = tf.nn.relu(bn1_4, name="relu1_4")
     
@@ -86,9 +102,13 @@ with myGraph.as_default():
     deconv1_1 = tf.layers.conv2d_transpose(relu1_4, 32, [4, 4], strides=(2, 2), 
                                            padding="SAME", name="deconv_layer_1")
     
+<<<<<<< HEAD
     deBn1_1 = tf.contrib.layers.batch_norm(deconv1_1)
     # record summary to see the values
     deBn1_1_summary = tf.summary.histogram("deBn1_1_summary", deBn1_1)
+=======
+    deBn1_1 = tf.layers.batch_normalization(deconv1_1, name="de_batch_normalization1_1")
+>>>>>>> 78a99623fce7eeaa58f18ba307452e3cae9714a7
     
     deRelu1_1 = tf.nn.relu(deBn1_1, name="de_relu1_1")
     
@@ -96,7 +116,11 @@ with myGraph.as_default():
     deconv1_2 = tf.layers.conv2d_transpose(deRelu1_1, 32, [4, 4], strides=(2, 2), 
                                            padding="SAME", name="deconv_layer_2")
     
+<<<<<<< HEAD
     deBn1_2 = tf.contrib.layers.batch_norm(deconv1_2)
+=======
+    deBn1_2 = tf.layers.batch_normalization(deconv1_2, name="de_batch_normalization1_2")
+>>>>>>> 78a99623fce7eeaa58f18ba307452e3cae9714a7
     
     deRelu1_2 = tf.nn.relu(deBn1_2, name="de_relu1_2")
     
@@ -104,7 +128,11 @@ with myGraph.as_default():
     deconv1_3 = tf.layers.conv2d_transpose(deRelu1_2, 32, [4, 4], strides=(2, 2), 
                                            padding="SAME", name="deconv_layer_3")
     
+<<<<<<< HEAD
     deBn1_3 = tf.contrib.layers.batch_norm(deconv1_3)
+=======
+    deBn1_3 = tf.layers.batch_normalization(deconv1_3, name="de_batch_normalization1_3")
+>>>>>>> 78a99623fce7eeaa58f18ba307452e3cae9714a7
     
     deRelu1_3 = tf.nn.relu(deBn1_3, name="de_relu1_3")
     
@@ -112,10 +140,14 @@ with myGraph.as_default():
     deconv1_4 = tf.layers.conv2d_transpose(deRelu1_3, 32, [4, 4], strides=(2, 2),
                                            padding="SAME", name="deconv_layer_4")
     
+<<<<<<< HEAD
     deBn1_4 = tf.contrib.layers.batch_norm(deconv1_4)
     
     # record the histogram summary:
     deBn1_4_summary = tf.summary.histogram("deBn1_4_summary", deBn1_4)
+=======
+    deBn1_4 = tf.layers.batch_normalization(deconv1_4, name="de_batch_normalization1_4")
+>>>>>>> 78a99623fce7eeaa58f18ba307452e3cae9714a7
     
     deRelu1_4 = tf.nn.relu(deBn1_4, name="de_relu1_4")
 
