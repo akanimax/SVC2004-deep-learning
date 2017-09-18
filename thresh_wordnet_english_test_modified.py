@@ -41,14 +41,6 @@ def get_features(source_path, uid):
 		batch[count] = img # insert this image in the batch
 		count += 1 # increment the counter
 
-	def mincer(vals):
-		'''
-			function to normalize the values in an array
-		'''
-		arange = np.amax(vals) - np.amin(vals)
-		amean = np.mean(vals)
-		return (vals - amean) / arange
-
 	# start tensorflow session and get the features (latent representation)
 	with tf.Session(graph=myGraph) as sess:
 		# define the path where the model is saved:
@@ -66,7 +58,7 @@ def get_features(source_path, uid):
 		
 	print('Features extracted.\n')
 	features = features.flatten().reshape(len(files), -1)
-	return features # normalize it and return
+	return features
 
 
 def train_svm(train_feats):

@@ -66,7 +66,7 @@ def get_features(source_path, uid):
 		
 	print('Features extracted.\n')
 	features = features.flatten().reshape(len(files), -1)
-	return features # normalize it and return
+	return features
 
 
 def train_svm(train_feats):
